@@ -12,7 +12,7 @@ const api = axios.create({
 
 // Incidents API
 export const incidentsAPI = {
-  getAll: async (): Promise<{ incidents: Incident[] }> => {
+  getAll: async (): Promise<Incident[]> => {
     const response = await api.get('/api/incidents');
     return response.data;
   },
@@ -25,6 +25,10 @@ export const incidentsAPI = {
   update: async (id: string, updates: Partial<Incident>): Promise<Incident> => {
     const response = await api.put(`/api/incidents/${id}`, updates);
     return response.data;
+  },
+
+  delete: async (id: string): Promise<void> => {
+    await api.delete(`/api/incidents/${id}`);
   },
 };
 
