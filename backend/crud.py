@@ -26,7 +26,7 @@ def create_incident(db: Session, incident: IncidentCreate) -> Incident:
         type=incident.type.value,
         priority=incident.priority.value,
         status=incident.status.value,
-        location=incident.location.dict(),
+        location=incident.location.model_dump(),
         description=incident.description,
         notes=incident.notes,
         assigned_units=[]

@@ -217,7 +217,7 @@ async def root():
     return {"message": "DC RTCC Simulation API", "status": "running"}
 
 @app.get("/api/dashboard/stats")
-async def get_dashboard_stats(db: Session = Depends(get_db)):
+async def get_dashboard_stats_api(db: Session = Depends(get_db)):
     """Get dashboard statistics"""
     return get_dashboard_stats(db)
 

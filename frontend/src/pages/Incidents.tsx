@@ -49,9 +49,11 @@ const Incidents: React.FC = () => {
 
   const handleCreateIncident = async (formData: any) => {
     try {
+      console.log('Creating incident with form data:', formData);
       setError(null);
       setSuccessMessage(null);
       const newIncident = await incidentsAPI.create(formData);
+      console.log('Created incident:', newIncident);
       setShowForm(false);
       setSuccessMessage(`Incident ${newIncident.incident_id || newIncident.id} created successfully!`);
       await loadIncidents();
