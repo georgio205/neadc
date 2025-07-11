@@ -4,6 +4,27 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { XMarkIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
+// Geocoding function using OpenStreetMap Nominatim API
+const geocodeAddress = async (address: string): Promise<{ lat: number; lng: number } | null> => {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
+    );
+    const data = await response.json();
+    
+    if (data && data.length > 0) {
+      return {
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon)
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Geocoding error:', error);
+    return null;
+  }
+};
+
 const incidentSchema = z.object({
   type: z.enum(['medical', 'fire', 'police', 'traffic', 'other']),
   priority: z.enum(['low', 'medium', 'high', 'critical']),
@@ -11,7 +32,8 @@ const incidentSchema = z.object({
   notes: z.string().optional(),
   location: z.object({
     lat: z.number().min(-90).max(90),
-    lng: z.number().min(-180).max(180)
+    lng: z.number().min(-180).max(180),
+    address: z.string().min(1, 'Address is required')
   })
 });
 
@@ -45,7 +67,7 @@ const IncidentForm: React.FC<IncidentFormProps> = ({
       priority: 'medium',
       description: '',
       notes: '',
-      location: { lat: 38.9072, lng: -77.0369 }
+      location: { lat: 38.9072, lng: -77.0369, address: '' }
     }
   });
 
@@ -72,9 +94,38 @@ const IncidentForm: React.FC<IncidentFormProps> = ({
     }
   };
 
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
+  const handleAddressGeocode = async (address: string) => {
+    if (!address.trim()) return null;
+    
+    setIsGeocoding(true);
+    try {
+      const coords = await geocodeAddress(address);
+      if (coords) {
+        setValue('location.lat', coords.lat);
+        setValue('location.lng', coords.lng);
+        return coords;
+      }
+    } catch (error) {
+      console.error('Geocoding failed:', error);
+    } finally {
+      setIsGeocoding(false);
+    }
+    return null;
+  };
+
   const onSubmitForm = async (data: IncidentFormData) => {
     setIsSubmitting(true);
     try {
+      // If we have an address but no coordinates, try to geocode
+      if (data.location.address && (!data.location.lat || !data.location.lng)) {
+        const coords = await handleAddressGeocode(data.location.address);
+        if (coords) {
+          data.location.lat = coords.lat;
+          data.location.lng = coords.lng;
+        }
+      }
       await onSubmit(data);
     } finally {
       setIsSubmitting(false);
@@ -187,37 +238,41 @@ const IncidentForm: React.FC<IncidentFormProps> = ({
           {/* Location */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Location
+              Location Address *
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Latitude</label>
                 <input
-                  type="number"
-                  step="any"
-                  {...register('location.lat', { valueAsNumber: true })}
+                  type="text"
+                  {...register('location.address')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="38.9072"
+                  placeholder="Enter full address (e.g., 1600 Pennsylvania Ave NW, Washington, DC)"
                 />
+                {errors.location?.address && (
+                  <p className="mt-1 text-sm text-red-600">{errors.location.address.message}</p>
+                )}
               </div>
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Longitude</label>
-                <input
-                  type="number"
-                  step="any"
-                  {...register('location.lng', { valueAsNumber: true })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="-77.0369"
-                />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center text-sm text-gray-500">
+                  <MapPinIcon className="h-4 w-4 mr-1" />
+                  <span>Address will be automatically converted to coordinates</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleAddressGeocode(watch('location.address'))}
+                  disabled={isGeocoding || !watch('location.address')}
+                  className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGeocoding ? 'Converting...' : 'Convert to Coordinates'}
+                </button>
               </div>
+              {/* Hidden coordinate fields for form validation */}
+              <input type="hidden" {...register('location.lat', { valueAsNumber: true })} />
+              <input type="hidden" {...register('location.lng', { valueAsNumber: true })} />
             </div>
-            <div className="mt-2 flex items-center text-sm text-gray-500">
-              <MapPinIcon className="h-4 w-4 mr-1" />
-              <span>DC Metro Area (default coordinates)</span>
-            </div>
-            {errors.location && (
+            {errors.location?.lat || errors.location?.lng ? (
               <p className="mt-1 text-sm text-red-600">Invalid location coordinates</p>
-            )}
+            ) : null}
           </div>
 
           {/* Form Actions */}

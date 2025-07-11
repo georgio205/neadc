@@ -146,7 +146,7 @@ const Units: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-400">Location:</span>
                 <span className="text-sm text-gray-300">
-                  {unit.location.lat.toFixed(4)}, {unit.location.lng.toFixed(4)}
+                  {unit.location.address || `${unit.location.lat.toFixed(4)}, ${unit.location.lng.toFixed(4)}`}
                 </span>
               </div>
 
@@ -213,7 +213,7 @@ const Units: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                    {unit.location.lat.toFixed(4)}, {unit.location.lng.toFixed(4)}
+                    {unit.location.address || `${unit.location.lat.toFixed(4)}, ${unit.location.lng.toFixed(4)}`}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                     {new Date().toLocaleTimeString()}

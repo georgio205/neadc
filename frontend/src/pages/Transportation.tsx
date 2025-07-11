@@ -139,7 +139,7 @@ const Transportation: React.FC = () => {
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-400">Location:</span>
                   <span className="text-gray-300">
-                    {bus.location.lat.toFixed(4)}, {bus.location.lng.toFixed(4)}
+                    {bus.location.address || `${bus.location.lat.toFixed(4)}, ${bus.location.lng.toFixed(4)}`}
                   </span>
                 </div>
                 

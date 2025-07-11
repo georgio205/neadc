@@ -88,21 +88,21 @@ def initialize_sample_data(db):
             unit_id="PD-001",
             type="police",
             status="available",
-            location={"lat": 38.9072, "lng": -77.0369},
+            location={"lat": 38.9072, "lng": -77.0369, "address": "Union Station, Washington, DC"},
             description="Metro Police Unit 1"
         ),
         EmergencyUnitCreate(
             unit_id="FD-001",
             type="fire",
             status="responding",
-            location={"lat": 38.8951, "lng": -77.0364},
+            location={"lat": 38.8951, "lng": -77.0364, "address": "National Mall, Washington, DC"},
             description="Fire Engine 1"
         ),
         EmergencyUnitCreate(
             unit_id="EMS-001",
             type="ems",
             status="available",
-            location={"lat": 38.9007, "lng": -77.0167},
+            location={"lat": 38.9007, "lng": -77.0167, "address": "Capitol Hill, Washington, DC"},
             description="Ambulance 1"
         )
     ]
@@ -116,7 +116,7 @@ def initialize_sample_data(db):
             type="medical",
             priority="high",
             status="active",
-            location={"lat": 38.9072, "lng": -77.0369},
+            location={"lat": 38.9072, "lng": -77.0369, "address": "Union Station, Washington, DC"},
             description="Medical emergency at Union Station",
             notes="Patient experiencing chest pain"
         )
@@ -130,7 +130,7 @@ def initialize_sample_data(db):
         TrafficIncidentCreate(
             type="accident",
             severity="medium",
-            location={"lat": 38.8951, "lng": -77.0364},
+            location={"lat": 38.8951, "lng": -77.0364, "address": "I-95 near National Mall, Washington, DC"},
             description="Multi-vehicle accident on I-95",
             affected_roads=["I-95", "Route 50"],
             estimated_duration=45
@@ -388,7 +388,8 @@ async def get_wmata_bus():
             "route": f"Route {random.randint(1, 100)}",
             "location": {
                 "lat": 38.9072 + random.uniform(-0.1, 0.1),
-                "lng": -77.0369 + random.uniform(-0.1, 0.1)
+                "lng": -77.0369 + random.uniform(-0.1, 0.1),
+                "address": f"Washington DC Area - Bus {i+1}"
             },
             "status": random.choice(["in_service", "out_of_service", "delayed"]),
             "last_update": datetime.now().isoformat()
@@ -492,7 +493,8 @@ async def simulate_real_time_updates():
                 # Move unit slightly
                 new_location = {
                     "lat": unit.location["lat"] + random.uniform(-0.001, 0.001),
-                    "lng": unit.location["lng"] + random.uniform(-0.001, 0.001)
+                    "lng": unit.location["lng"] + random.uniform(-0.001, 0.001),
+                    "address": unit.location.get("address", "Washington DC Area")
                 }
                 
                 unit_update = EmergencyUnitUpdate(location=new_location)
@@ -509,7 +511,8 @@ async def simulate_real_time_updates():
                     status="active",
                     location={
                         "lat": 38.9072 + random.uniform(-0.05, 0.05),
-                        "lng": -77.0369 + random.uniform(-0.05, 0.05)
+                        "lng": -77.0369 + random.uniform(-0.05, 0.05),
+                        "address": "Washington DC Area - Simulated Incident"
                     },
                     description=f"Simulated {random.choice(incident_types)} incident"
                 )
@@ -531,7 +534,8 @@ async def simulate_real_time_updates():
                     severity=random.choice(severities),
                     location={
                         "lat": 38.9072 + random.uniform(-0.05, 0.05),
-                        "lng": -77.0369 + random.uniform(-0.05, 0.05)
+                        "lng": -77.0369 + random.uniform(-0.05, 0.05),
+                        "address": "Washington DC Area - Simulated Traffic Incident"
                     },
                     description=f"Simulated {random.choice(traffic_types)} traffic incident",
                     affected_roads=[f"Route {random.randint(1, 100)}"],
