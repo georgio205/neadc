@@ -33,9 +33,11 @@ const Incidents: React.FC = () => {
 
   const loadIncidents = async () => {
     try {
+      console.log('Loading incidents...');
       setLoading(true);
       setError(null);
       const data = await incidentsAPI.getAll();
+      console.log('Loaded incidents:', data);
       setIncidents(data);
     } catch (error) {
       console.error('Error loading incidents:', error);

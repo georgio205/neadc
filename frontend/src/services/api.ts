@@ -13,13 +13,27 @@ const api = axios.create({
 // Incidents API
 export const incidentsAPI = {
   getAll: async (): Promise<Incident[]> => {
-    const response = await api.get('/api/incidents');
-    return response.data;
+    console.log('Fetching incidents from:', `${API_BASE_URL}/api/incidents`);
+    try {
+      const response = await api.get('/api/incidents');
+      console.log('Incidents response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching incidents:', error);
+      throw error;
+    }
   },
 
   create: async (incident: Partial<Incident>): Promise<Incident> => {
-    const response = await api.post('/api/incidents', incident);
-    return response.data;
+    console.log('Creating incident:', incident);
+    try {
+      const response = await api.post('/api/incidents', incident);
+      console.log('Create incident response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating incident:', error);
+      throw error;
+    }
   },
 
   update: async (id: string, updates: Partial<Incident>): Promise<Incident> => {
