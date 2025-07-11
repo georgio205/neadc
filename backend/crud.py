@@ -26,7 +26,7 @@ def create_incident(db: Session, incident: IncidentCreate) -> Incident:
         type=incident.type.value,
         priority=incident.priority.value,
         status=incident.status.value,
-        location=incident.location.model_dump(),
+        location=incident.location.model_dump() if hasattr(incident.location, 'model_dump') else (incident.location.dict() if hasattr(incident.location, 'dict') else incident.location),
         description=incident.description,
         notes=incident.notes,
         assigned_units=[]
@@ -72,7 +72,7 @@ def update_incident(db: Session, incident_id: str, incident_update: IncidentUpda
         if update_data['status'] == 'resolved':
             update_data['resolved_at'] = datetime.utcnow()
     if 'location' in update_data:
-        update_data['location'] = update_data['location'].dict()
+        update_data['location'] = update_data['location'].model_dump() if hasattr(update_data['location'], 'model_dump') else (update_data['location'].dict() if hasattr(update_data['location'], 'dict') else update_data['location'])
     
     update_data['updated_at'] = datetime.utcnow()
     
@@ -98,7 +98,7 @@ def create_emergency_unit(db: Session, unit: EmergencyUnitCreate) -> EmergencyUn
         unit_id=unit.unit_id,
         type=unit.type.value,
         status=unit.status.value,
-        location=unit.location.dict(),
+        location=unit.location.model_dump() if hasattr(unit.location, 'model_dump') else (unit.location.dict() if hasattr(unit.location, 'dict') else unit.location),
         description=unit.description
     )
     db.add(db_unit)
@@ -141,7 +141,7 @@ def update_emergency_unit(db: Session, unit_id: str, unit_update: EmergencyUnitU
     if 'status' in update_data:
         update_data['status'] = update_data['status'].value
     if 'location' in update_data:
-        update_data['location'] = update_data['location'].dict()
+        update_data['location'] = update_data['location'].model_dump() if hasattr(update_data['location'], 'model_dump') else (update_data['location'].dict() if hasattr(update_data['location'], 'dict') else update_data['location'])
     
     update_data['last_updated'] = datetime.utcnow()
     
@@ -218,7 +218,7 @@ def create_traffic_incident(db: Session, traffic_incident: TrafficIncidentCreate
         incident_id=incident_id,
         type=traffic_incident.type.value,
         severity=traffic_incident.severity.value,
-        location=traffic_incident.location.dict(),
+        location=traffic_incident.location.model_dump() if hasattr(traffic_incident.location, 'model_dump') else (traffic_incident.location.dict() if hasattr(traffic_incident.location, 'dict') else traffic_incident.location),
         description=traffic_incident.description,
         affected_roads=traffic_incident.affected_roads,
         estimated_duration=traffic_incident.estimated_duration
@@ -257,7 +257,7 @@ def update_traffic_incident(db: Session, incident_id: str, traffic_update: Traff
     if 'severity' in update_data:
         update_data['severity'] = update_data['severity'].value
     if 'location' in update_data:
-        update_data['location'] = update_data['location'].dict()
+        update_data['location'] = update_data['location'].model_dump() if hasattr(update_data['location'], 'model_dump') else (update_data['location'].dict() if hasattr(update_data['location'], 'dict') else update_data['location'])
     
     for field, value in update_data.items():
         setattr(db_traffic_incident, field, value)
