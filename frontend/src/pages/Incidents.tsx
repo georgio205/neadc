@@ -10,7 +10,7 @@ interface Incident {
   type: string;
   priority: string;
   status: string;
-  location: { lat: number; lng: number };
+  location: { lat: number; lng: number; address?: string };
   description: string;
   notes?: string;
   assigned_units: string[];
@@ -25,6 +25,7 @@ const Incidents: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingIncident, setEditingIncident] = useState<Incident | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     loadIncidents();
@@ -46,12 +47,20 @@ const Incidents: React.FC = () => {
 
   const handleCreateIncident = async (formData: any) => {
     try {
-      await incidentsAPI.create(formData);
+      setError(null);
+      setSuccessMessage(null);
+      const newIncident = await incidentsAPI.create(formData);
       setShowForm(false);
-      loadIncidents();
+      setSuccessMessage(`Incident ${newIncident.incident_id || newIncident.id} created successfully!`);
+      await loadIncidents();
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
     } catch (error) {
       console.error('Error creating incident:', error);
-      setError('Failed to create incident');
+      setError('Failed to create incident. Please try again.');
     }
   };
 
@@ -59,12 +68,20 @@ const Incidents: React.FC = () => {
     if (!editingIncident) return;
     
     try {
+      setError(null);
+      setSuccessMessage(null);
       await incidentsAPI.update(editingIncident.incident_id, formData);
       setEditingIncident(null);
-      loadIncidents();
+      setSuccessMessage(`Incident ${editingIncident.incident_id} updated successfully!`);
+      await loadIncidents();
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
     } catch (error) {
       console.error('Error updating incident:', error);
-      setError('Failed to update incident');
+      setError('Failed to update incident. Please try again.');
     }
   };
 
@@ -74,21 +91,37 @@ const Incidents: React.FC = () => {
     }
 
     try {
+      setError(null);
+      setSuccessMessage(null);
       await incidentsAPI.delete(incident.incident_id);
-      loadIncidents();
+      setSuccessMessage(`Incident ${incident.incident_id} deleted successfully!`);
+      await loadIncidents();
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
     } catch (error) {
       console.error('Error deleting incident:', error);
-      setError('Failed to delete incident');
+      setError('Failed to delete incident. Please try again.');
     }
   };
 
   const handleResolveIncident = async (incident: Incident) => {
     try {
+      setError(null);
+      setSuccessMessage(null);
       await incidentsAPI.update(incident.incident_id, { status: 'resolved' });
-      loadIncidents();
+      setSuccessMessage(`Incident ${incident.incident_id} resolved successfully!`);
+      await loadIncidents();
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
     } catch (error) {
       console.error('Error resolving incident:', error);
-      setError('Failed to resolve incident');
+      setError('Failed to resolve incident. Please try again.');
     }
   };
 
@@ -114,9 +147,9 @@ const Incidents: React.FC = () => {
       key: 'location', 
       label: 'Location', 
       sortable: false,
-      render: (value: { lat: number; lng: number }) => (
+      render: (value: { lat: number; lng: number; address?: string }) => (
         <div className="text-sm text-gray-600">
-          {value.lat.toFixed(4)}, {value.lng.toFixed(4)}
+          {value.address || `${value.lat.toFixed(4)}, ${value.lng.toFixed(4)}`}
         </div>
       )
     },
@@ -156,7 +189,11 @@ const Incidents: React.FC = () => {
           <p className="text-gray-600">Manage and track emergency incidents</p>
         </div>
         <button 
-          onClick={() => setShowForm(true)}
+          onClick={() => {
+            setError(null);
+            setSuccessMessage(null);
+            setShowForm(true);
+          }}
           className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <PlusIcon className="h-4 w-4 mr-2" />
@@ -172,6 +209,23 @@ const Incidents: React.FC = () => {
             <div className="ml-3">
               <h3 className="text-sm font-medium text-red-800">Error</h3>
               <div className="mt-2 text-sm text-red-700">{error}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Message */}
+      {successMessage && (
+        <div className="bg-green-50 border border-green-200 rounded-md p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-green-800">Success</h3>
+              <div className="mt-2 text-sm text-green-700">{successMessage}</div>
             </div>
           </div>
         </div>
